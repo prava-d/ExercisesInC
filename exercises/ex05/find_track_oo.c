@@ -24,25 +24,51 @@ typedef regex_t Regex;
 
 
 /* Returns a new Regex that matches the given pattern.
+* Modified Allen's solution code from Homework 2.5
 *
 * pattern: string regex
 * flags: flags passed to regcomp
 * returns: new Regex
 */
 Regex *make_regex(char *pattern, int flags) {
-    // FILL THIS IN!
-    return NULL;
+    // using malloc to free dynamic space
+    regex_t *re = malloc(sizeof(regex_t));
+    int ret = regcomp(re, pattern, flags);
+
+    if (ret) {
+        printf("Regex error");
+        exit(1);
+    }
+
+    return re;
 }
 
 /* Checks whether a regex matches a string.
+* Modified Allen's solution code from Homework 2.5
 *
 * regex: Regex pointer
 * s: string
 * returns: 1 if there's a match, 0 otherwise
 */
 int regex_match(Regex *regex, char *s) {
-    // FILL THIS IN!
-    return 0;
+    // first makes regex
+    int ret = regexec(regex, s, 0, NULL, 0);
+
+    // successful match
+    if (!ret) {
+        return 1;
+    }
+    // not successful
+    else if (ret == REG_NOMATCH) {
+        return 0;
+    }
+    // regex match error
+    else {
+        char msgbuf[100];
+        regerror(ret, regex, msgbuf, sizeof(msgbuf));
+        fprintf(stderr, "Regex match failed: %s\n", msgbuf);
+        exit(1);
+    }
 }
 
 /* Frees a Regex.
@@ -50,7 +76,8 @@ int regex_match(Regex *regex, char *s) {
 * regex: Regex pointer
 */
 void regex_free(Regex *regex) {
-    // FILL THIS IN!
+    //the regex library has an inbuilt function for this
+    regfree(regex);
 }
 
 

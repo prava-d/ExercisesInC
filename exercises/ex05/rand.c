@@ -76,9 +76,44 @@ float my_random_float2()
 }
 
 // compute a random double using my algorithm
+//modified from Allen's my_random_float2() code
 double my_random_double()
 {
-    // TODO: fill this in
+    // need these to be longs instead
+    long x;    // to store the result of the random() funct
+    long mant;
+    long exp = 1022;
+    long mask = 1;
+
+    // need to store a long instead
+    union {
+        float f;
+        long i;
+    } b;
+
+    // generate random bits until we see the first set bit
+    while (1) {
+        x = random();
+        x = (x << 32) | random(); // need to do it twice to cover 64 bits
+        if (x == 0) {
+            exp -= 63;  // now 63 because it's a double
+        } else {
+            break;
+        }
+    }
+
+    // find the location of the first set bit and compute the exponent
+    while (x & mask) {
+        mask <<= 1;
+        exp--;
+    }
+
+    // use the remaining bit as the mantissa
+    // updated numbers as it is a double now
+    mant = x >> 11;
+    b.i = (exp << 52) | mant;
+
+    return b.f;
 }
 
 // return a constant (this is a dummy function for time trials)
@@ -124,3 +159,29 @@ float random_double()
 
     return f;
 }
+
+
+/*
+while (1) {
+        x = random();
+
+        x = (x<<32) | random();
+        if (x == 0) {
+            exp -=63;
+        } else {
+            break;
+        }
+    }
+
+    // find the location of the first set bit and compute the exponent
+    while (x & mask) {
+        mask <<= 1;
+        exp--;
+    }
+
+    // use the remaining bit as the mantissa
+    mant = x >> 11;
+    b.i = (exp << 52) | mant;
+
+    return b.d;
+*/
