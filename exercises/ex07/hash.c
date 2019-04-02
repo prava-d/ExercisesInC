@@ -178,7 +178,13 @@ int hash_hashable(Hashable *hashable)
 */
 int equal_int (void *ip, void *jp)
 {
-    // FILL THIS IN!
+
+    int i = *(int *)ip;
+    int j = *(int *)jp;
+
+    if (i == j) {
+        return 1;
+    }
     return 0;
 }
 
@@ -192,7 +198,14 @@ int equal_int (void *ip, void *jp)
 */
 int equal_string (void *s1, void *s2)
 {
-    // FILL THIS IN!
+
+    char** sa = (char **)s1;
+    char** sb = (char **)s2;
+
+    // use strcmp function, which returns 0 if equal
+    if (strcmp(*sa, *sb) == 0) {
+        return 1;
+    }
     return 0;
 }
 
@@ -207,8 +220,8 @@ int equal_string (void *s1, void *s2)
 */
 int equal_hashable(Hashable *h1, Hashable *h2)
 {
-    // FILL THIS IN!
-    return 0;
+    // check if keys are the same
+    return h1->equal(h1->key, h2->key);
 }
 
 
@@ -296,7 +309,13 @@ Node *prepend(Hashable *key, Value *value, Node *rest)
 /* Looks up a key and returns the corresponding value, or NULL */
 Value *list_lookup(Node *list, Hashable *key)
 {
-    // FILL THIS IN!
+    // traverse list until key matches, in which case return the value
+    while (list != NULL) {
+        if (list->key == key) {
+            return list->value;
+        }
+        list = list->next;
+    }
     return NULL;
 }
 
@@ -341,15 +360,29 @@ void print_map(Map *map)
 /* Adds a key-value pair to a map. */
 void map_add(Map *map, Hashable *key, Value *value)
 {
-    // FILL THIS IN!
+    // hash number = map->n
+    // bucket number = hash_hashable(key)%hash
+
+    Node *next;
+
+    // if the list contains a node already, prev will be that node
+    // else if its null, it will make it NULL (which is fine)
+    next = make_node(key, value, map->lists[(hash_hashable(key))%map->n]);
+
+    map->lists[(hash_hashable(key))%map->n] = next;
+
+
 }
 
 
 /* Looks up a key and returns the corresponding value, or NULL. */
 Value *map_lookup(Map *map, Hashable *key)
 {
-    // FILL THIS IN!
-    return NULL;
+    // hash number = map->n
+    // bucket number = hash_hashable(key)%hash
+
+    // use hashcode to index into the right spot
+    return list_lookup(map->lists[(hash_hashable(key))%map->n],key);
 }
 
 
