@@ -3,6 +3,18 @@ Utilizes glib and hashtables.
 Big thanks to the glib documentation and the fact you can just add g_ to anything.
 **/
 
+/** Answers to the questions.
+1. GLib is a compilation of three low-level C system libraries developed by
+GNOME. It provides data structures. memory management, standard macros, warnings
+and assertions, dynamic loading of modules, and thread functionality. Originally
+it was a part of GTK so it can be used by software other then GNOME.
+2. The pros of using Glib is that it seems very useful in providing data structures,
+in particular advanced ones, for which implementation would be arduous. The con is
+figuring out all of the various GLib calls, which seems to boil down to putting a 
+'g' or a 'g_' in front of everything.
+3. gcc ex_compile.c -Wall -o ex_compile `pkg-config --cflags --libs glib-2.0`
+**/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <glib.h>
