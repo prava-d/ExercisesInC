@@ -4,6 +4,12 @@ Copyright 2016 Allen B. Downey
 License: MIT License https://opensource.org/licenses/MIT
 
 */
+/*
+It seems that the parent and child processes do all have access to the same
+global, static, and heap variables. However, it seems that the child process
+creates a copy of the parent address space (with the exception of global)?
+According the results of this code.
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +25,16 @@ License: MIT License https://opensource.org/licenses/MIT
 // error information
 extern int errno;
 
+// variable located in the global segment
+int gint = 1;
+
+
+// function to print out all the variables
+void printvars(int sint, int* hint) {
+    printf("Variable gint %d\n", gint);
+    printf("Variable sint %d\n", sint);
+    printf("Variable hint %d\n", *hint);
+}
 
 // get_seconds returns the number of seconds since the
 // beginning of the day, with microsecond precision
@@ -30,10 +46,15 @@ double get_seconds() {
 }
 
 
-void child_code(int i)
+// modified to change global, static, and heap variables
+void child_code(int i, int *sintptr, int *hint)
 {
     sleep(i);
+    gint = gint + 1;
+    *sintptr = *sintptr + 1;
+    *hint = *hint + 1;
     printf("Hello from child %d.\n", i);
+    printvars(*sintptr, hint);
 }
 
 // main takes two parameters: argc is the number of command-line
@@ -45,6 +66,11 @@ int main(int argc, char *argv[])
     pid_t pid;
     double start, stop;
     int i, num_children;
+
+    // variables located in the static and the heap segments
+    int sint = 10;
+    int* hint = malloc (sizeof(int));
+    *hint = 100; 
 
     // the first command-line argument is the name of the executable.
     // if there is a second, it is the number of children to create.
@@ -72,13 +98,23 @@ int main(int argc, char *argv[])
 
         /* see if we're the parent or the child */
         if (pid == 0) {
-            child_code(i);
+            child_code(i, &sint, hint);
             exit(i);
         }
     }
 
     /* parent continues */
     printf("Hello from the parent.\n");
+
+    // check to see what happens with the parent modification
+    gint = gint + 1;
+    sint = sint + 1;
+    *hint = *hint + 1;
+    printvars(sint, hint);
+
+    // check to see what happens with the child code variables
+    child_code(i, &sint, hint);
+
 
     for (i=0; i<num_children; i++) {
         pid = wait(&status);
