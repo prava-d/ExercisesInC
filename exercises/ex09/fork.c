@@ -7,8 +7,9 @@ License: MIT License https://opensource.org/licenses/MIT
 /*
 It seems that the parent and child processes do all have access to the same
 global, static, and heap variables. However, it seems that the child process
-creates a copy of the parent address space (with the exception of global)?
-According the results of this code.
+creates a copy of the parent address space according the results of this code.
+When the parent and the child incremented it, they became the same value instead
+of incrementing it by 2.
 */
 
 #include <stdio.h>
