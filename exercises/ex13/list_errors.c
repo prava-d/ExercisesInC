@@ -7,6 +7,22 @@ License: Creative Commons Attribution-ShareAlike 3.0
 
 */
 
+/*
+Before freeing lists -->
+
+LEAK SUMMARY:
+definitely lost: 48 bytes in 3 blocks
+indirectly lost: 112 bytes in 7 blocks
+possibly lost: 0 bytes in 0 blocks
+still reachable: 0 bytes in 0 blocks
+suppressed: 0 bytes in 0 blocks
+
+After freeing lists -->
+
+All heap blocks were freed -- no leaks are possible
+*/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -179,6 +195,22 @@ Node *make_something() {
 }
 
 
+/* Function that frees all the nodes in a list
+    head: Node pointer pointer
+*/
+void free_list(Node **head) {
+    Node *n;
+    n = *head;
+    Node *prev = NULL;
+
+    // goes through each element in the list until NULL
+    while (n != NULL) {
+        prev = n;
+        n = n->next;
+        free(prev);
+    }
+}
+
 int main() {
     // make a list of even numbers
     Node *test_list = make_node(2, NULL);
@@ -207,7 +239,13 @@ int main() {
     print_list(&empty);
 
     Node *something = make_something();
-    free(something);
+    // free(something);
+
+    // freeing variables test_list, something, and empty
+    // pass in addresses as function takes Node ** type
+    free_list(&test_list);
+    free_list(&something);
+    free_list(&empty);
 
     return 0;
 }

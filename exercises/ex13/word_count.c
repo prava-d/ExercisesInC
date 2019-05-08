@@ -10,6 +10,26 @@ Note: this version leaks memory.
 
 */
 
+/*
+Before freeing -->
+
+LEAK SUMMARY:
+definitely lost: 1,890,348 bytes in 59,300 blocks
+indirectly lost: 931,607 bytes in 166,438 blocks
+possibly lost: 0 bytes in 0 blocks
+still reachable: 18,604 bytes in 6 blocks
+suppressed: 0 bytes in 0 blocks
+
+After freeing -->
+
+definitely lost: 0 bytes in 0 blocks
+indirectly lost: 0 bytes in 0 blocks
+possibly lost: 0 bytes in 0 blocks
+still reachable: 18,604 bytes in 6 blocks
+suppressed: 0 bytes in 0 blocks
+
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <glib.h>
@@ -69,7 +89,17 @@ void incr(GHashTable* hash, gchar *key)
         g_hash_table_insert(hash, key, val1);
     } else {
         *val += 1;
+        // free the key here as it is not used
+        g_free(key);
     }
+}
+
+/* Function to free a pair in the hash table
+    p: type gpointer to pair
+*/
+void free_pair (gpointer pair) {
+    Pair *p = (Pair *) p;
+    g_free(pair);
 }
 
 int main(int argc, char** argv)
@@ -93,7 +123,8 @@ int main(int argc, char** argv)
     (one-L) NUL terminated strings */
     gchar **array;
     gchar line[128];
-    GHashTable* hash = g_hash_table_new(g_str_hash, g_str_equal);
+    // can use supplied free / destroy functions
+    GHashTable* hash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
 
     // read lines from the file and build the hash table
     while (1) {
@@ -104,6 +135,8 @@ int main(int argc, char** argv)
         for (int i=0; array[i] != NULL; i++) {
             incr(hash, array[i]);
         }
+        // use glib function to free array
+        g_free(array);
     }
     fclose(fp);
 
@@ -111,7 +144,7 @@ int main(int argc, char** argv)
     // g_hash_table_foreach(hash, (GHFunc) kv_printor, "Word %s freq %d\n");
 
     // iterate the hash table and build the sequence
-    GSequence *seq = g_sequence_new(NULL);
+    GSequence *seq = g_sequence_new(free_pair); // change to free_pair to iterate and free
     g_hash_table_foreach(hash, (GHFunc) accumulator, (gpointer) seq);
 
     // iterate the sequence and print the pairs
